@@ -1,26 +1,67 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
   <title>Переход к опросу</title>
 </head>
 <body>
   <p>Перенаправляем вас к опросу...</p>
 
-  <script>
-    var forms = [
+  <p id="fallback" style="display:none">
+    Если переход не произошёл,
+    <a id="surveyLink" href="#">нажмите сюда</a>.
+  </p>
+
+  <script type="text/javascript">
+    (function () {
+      var forms = [
       "https://forms.yandex.ru/u/6aa2258295add51d0135f0be/",    // Анкета (0) плацебо
       "https://forms.yandex.ru/u/6ad7389a90290233e446a7a9/",    // Анкета (1) нарратив - наличные сбережения
       "https://forms.yandex.ru/u/6ad738b99029022d4646a881/",    // Анкета (2) нарратив - кредитный рынок
       "https://forms.yandex.ru/u/6ad738cd2c4f89345c1bb1d0/",    // Анкета (3) нарратив - рынок труда
       "https://forms.yandex.ru/u/6ad738e590290231f846a895/"     // Анкета (4) нарратив - инфляция активов
-    ];
+        ];
 
-    var group = Math.floor(Math.random() * forms.length);
+      var storageKey = "rct_group_v3";
+      var group = -1;
 
-    window.location.replace(forms[group]);
+      // Проверяем сохранённую группу
+      try {
+        var saved = localStorage.getItem(storageKey);
+
+        if (saved !== null && /^[0-4]$/.test(saved)) {
+          group = Number(saved);
+        }
+      } catch (e) {
+        // Если хранилище недоступно, продолжаем
+      }
+
+      // Если группа ещё не назначена
+      if (group === -1) {
+        group = Math.floor(Math.random() * forms.length);
+
+        // Запоминаем группу
+        try {
+          localStorage.setItem(storageKey, String(group));
+        } catch (e) {
+          // Если сохранить не удалось, всё равно открываем анкету
+        }
+      }
+
+      var destination = forms[group];
+
+      // Резервная ссылка
+      document.getElementById("surveyLink").href =
+        destination;
+
+      document.getElementById("fallback").style.display =
+        "block";
+
+      // Перенаправляем на Яндекс Форму
+      window.location.replace(destination);
+    })();
   </script>
 </body>
 </html>
